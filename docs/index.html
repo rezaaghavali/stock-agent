@@ -9,75 +9,131 @@
 @media (prefers-color-scheme:dark){:root{--bg:#0f1319;--card:#171d26;--text:#e8ecf2;--muted:#98a2b3;--line:#273041;--good:#3ecf9a;--bad:#fb923c;--accent:#7aa2ff}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-main{max-width:640px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:4px 0 2px}
-h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
-.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
+.sub,.muted{color:var(--muted);font-size:13px}.sub{margin-bottom:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;overflow-x:auto}
 .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid var(--accent);color:var(--accent);margin-left:6px;vertical-align:middle}
-.big{font-size:34px;font-weight:700;line-height:1}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
-.muted{color:var(--muted);font-size:13px}
+.big{font-size:32px;font-weight:700;line-height:1.1}
+.row,.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.row:first-of-type,.kv:first-of-type{border-top:0}
+a{color:var(--accent)}a.row{color:inherit;text-decoration:none}
 .good{color:var(--good)}.bad{color:var(--bad)}
 .bar{position:relative;flex:1;height:8px;background:var(--line);border-radius:4px}
 .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--accent)}
 .bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55}
-.t{width:54px;font-weight:600}.s{width:34px;text-align:right}.o{width:84px;text-align:right;font-size:13px}
+.t{width:60px;font-weight:600}.s{width:34px;text-align:right}.o{width:84px;text-align:right;font-size:13px}
+.nav{display:flex;gap:8px;margin-bottom:12px}
+.nav a{padding:6px 14px;border-radius:99px;border:1px solid var(--line);color:var(--muted);text-decoration:none;font-size:14px}
+.nav a.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:6px 4px;border-top:1px solid var(--line);white-space:nowrap}th{color:var(--muted);font-weight:500;border-top:0}
+th:first-child,td:first-child{text-align:left}
 </style>
 </head>
 <body>
 <main id="app"><div class="card muted">Loading…</div></main>
 <script>
-const $ = s => document.querySelector(s);
+const app = document.querySelector('#app');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const usd = n => '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-const pct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+const pct = n => n == null ? '–' : (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
 const cls = n => n >= 0 ? 'good' : 'bad';
-
-fetch('data.json', {cache: 'no-store'})
-  .then(r => { if (!r.ok) throw 0; return r.json(); })
-  .then(render)
-  .catch(() => { $('#app').innerHTML = '<div class="card muted">No data yet. Run the workflow once from the Actions tab.</div>'; });
-
-function render(d) {
-  const m = d.market;
-  const status = m.score < d.floor ? ['Buying paused', 'bad']
-    : m.score < 50 ? ['Cautious: higher bar to buy', 'bad'] : ['Normal', 'good'];
-  const inv = d.positions.reduce((a, p) => a + p.invested, 0);
-  const val = d.positions.reduce((a, p) => a + p.value, 0);
+const P = n => n == null ? '–' : (n * 100).toFixed(1) + '%';
+const X = n => n == null ? '–' : n.toFixed(1);
+const B = n => {
+  if (n == null) return '–';
+  const a = Math.abs(n), s = n < 0 ? '-$' : '$';
+  return s + (a >= 1e12 ? (a / 1e12).toFixed(2) + 'T' : a >= 1e9 ? (a / 1e9).toFixed(1) + 'B' : a >= 1e6 ? (a / 1e6).toFixed(0) + 'M' : a.toFixed(0));
+};
+const kv = (k, v) => `<div class="kv"><span class="muted">${k}</span><b>${v}</b></div>`;
+const LABEL = {pe: 'P/E', peg: 'PEG', rev_growth: 'Revenue growth', profit_margin: 'Profit margin', debt_equity: 'Debt / equity', trend200: 'Price vs 200-day avg', rsi: 'RSI (14)'};
+const FMT = {rev_growth: P, profit_margin: P, trend200: P, debt_equity: v => (v / 100).toFixed(2) + 'x', pe: X, peg: X, rsi: X};
+ 
+let D;
+fetch('data.json', {cache: 'no-store'}).then(r => { if (!r.ok) throw 0; return r.json(); })
+  .then(d => { D = d; route(); })
+  .catch(() => { app.innerHTML = '<div class="card muted">No data yet. Run the workflow once from the Actions tab.</div>'; });
+addEventListener('hashchange', () => D && route());
+ 
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1)), s = D.stocks.find(x => x.ticker === h);
+  const nav = `<div class="nav"><a href="#" class="${!h ? 'on' : ''}">Portfolio</a><a href="#market" class="${h === 'market' ? 'on' : ''}">Market</a></div>`;
+  app.innerHTML = nav + (h === 'market' ? market() : s ? detail(s) : home());
+  scrollTo(0, 0);
+}
+ 
+function home() {
+  const d = D, m = d.market;
+  const st = m.score < d.floor ? ['Buying paused', 'bad'] : m.score < 50 ? ['Cautious: higher bar to buy', 'bad'] : ['Normal', 'good'];
+  const inv = d.positions.reduce((a, p) => a + p.invested, 0), val = d.positions.reduce((a, p) => a + p.value, 0);
   const ret = inv ? 100 * (val / inv - 1) : 0;
-
-  $('#app').innerHTML = `
-    <h1>Stock Agent <span class="badge">${esc(d.mode.toUpperCase())}</span></h1>
-    <div class="sub">Last run ${esc(d.updated)}</div>
-
-    <div class="card"><h2>Market</h2>
-      <div class="row" style="border:0;padding:0"><div class="big">${m.score}<span class="muted">/100</span></div>
-        <div style="text-align:right"><div class="${status[1]}">${status[0]}</div>
-        <div class="muted">S&amp;P vs 200-day ${pct(m.sp500_vs_200d * 100)} · VIX ${m.vix}</div></div></div></div>
-
-    <div class="card"><h2>This week · ${usd(d.budget)} budget, ${esc(d.allocation)} split</h2>
-      ${d.stocks.map(s => `<div class="row"><span class="t">${esc(s.ticker)}</span>
-        <div class="bar"><i style="width:${s.score ?? 0}%"></i><b style="left:${d.threshold}%"></b></div>
-        <span class="s">${s.score === null ? '–' : Math.round(s.score)}</span>
-        <span class="o ${s.order ? 'good' : 'muted'}">${s.order ? 'Buy ' + usd(s.order) : 'Skip'}</span></div>`).join('')}
-      <div class="muted" style="margin-top:8px">Marker = buy threshold (${d.threshold}). ${esc(d.note)}
-      Unspent money: ${esc(d.if_stock_fails)}.</div></div>
-
-    <div class="card"><h2>Portfolio</h2>
-      ${d.positions.length ? `<div class="row" style="padding-top:0"><div><div class="big">${usd(val)}</div>
-        <div class="muted">invested ${usd(inv)}</div></div><div class="big ${cls(ret)}">${pct(ret)}</div></div>` +
-        d.positions.map(p => `<div class="row"><span class="t">${esc(p.ticker)}</span>
-        <span class="muted">${usd(p.invested)} in</span><span>${usd(p.value)}</span>
-        <span class="${cls(p.value - p.invested)}">${pct(100 * (p.value / p.invested - 1))}</span></div>`).join('')
-        : '<div class="muted">No trades yet.</div>'}</div>
-
-    <div class="card"><h2>Recent buys</h2>
-      ${d.trades.length ? d.trades.map(t => `<div class="row"><span class="muted">${esc(t.date)}</span>
-        <span class="t">${esc(t.ticker)}</span><span>${usd(t.usd)}</span></div>`).join('')
-        : '<div class="muted">None yet.</div>'}</div>`;
+  return `<h1>Stock Agent <span class="badge">${esc(d.mode.toUpperCase())}</span></h1>
+  <div class="sub">Last run ${esc(d.updated)}</div>
+  <div class="card"><h2>Market</h2><div class="row" style="padding:0"><div class="big">${m.score}<span class="muted">/100</span></div>
+    <div style="text-align:right"><div class="${st[1]}">${st[0]}</div>
+    <div class="muted">S&amp;P vs 200-day ${pct(m.sp500_vs_200d * 100)} · VIX ${m.vix}</div><a class="muted" href="#market">Market overview →</a></div></div></div>
+  <div class="card"><h2>This week · ${usd(d.budget)} budget, ${esc(d.allocation)} split</h2>
+    ${d.stocks.map(s => `<a class="row" href="#${encodeURIComponent(s.ticker)}"><span class="t">${esc(s.ticker)}</span>
+      <div class="bar"><i style="width:${s.score ?? 0}%"></i><b style="left:${d.threshold}%"></b></div>
+      <span class="s">${s.score === null ? '–' : Math.round(s.score)}</span>
+      <span class="o ${s.order ? 'good' : 'muted'}">${s.order ? 'Buy ' + usd(s.order) : 'Skip'}</span></a>`).join('')}
+    <div class="muted" style="margin-top:8px">Tap a stock for details. Marker = buy threshold (${d.threshold}). ${esc(d.note)} Unspent money: ${esc(d.if_stock_fails)}.</div></div>
+  <div class="card"><h2>Portfolio</h2>
+    ${d.positions.length ? `<div class="row" style="padding-top:0"><div><div class="big">${usd(val)}</div><div class="muted">invested ${usd(inv)}</div></div>
+      <div class="big ${cls(ret)}">${pct(ret)}</div></div>` + d.positions.map(p => `<a class="row" href="#${encodeURIComponent(p.ticker)}"><span class="t">${esc(p.ticker)}</span>
+      <span class="muted">${usd(p.invested)} in</span><span>${usd(p.value)}</span><span class="${cls(p.value - p.invested)}">${pct(100 * (p.value / p.invested - 1))}</span></a>`).join('')
+      : '<div class="muted">No trades yet.</div>'}</div>
+  <div class="card"><h2>Recent buys</h2>${d.trades.length ? d.trades.map(t => `<div class="row"><span class="muted">${esc(t.date)}</span>
+    <span class="t">${esc(t.ticker)}</span><span>${usd(t.usd)}</span></div>`).join('') : '<div class="muted">None yet.</div>'}</div>`;
+}
+ 
+function market() {
+  const o = D.overview || {}, ix = Object.entries(o.indices || {}), m = D.market;
+  const sc = Object.entries(o.sectors || {}).sort((a, b) => b[1].m1 - a[1].m1);
+  const mx = Math.max(1, ...sc.map(([, v]) => Math.abs(v.m1)));
+  const lvl = n => n === 'VIX' || n === '10Y yield';
+  return `<h1>Market overview</h1><div class="sub">As of ${esc(D.updated)}</div>
+  <div class="card"><h2>Key indicators</h2>${kv('Agent market score', m.score + '/100')}${kv('S&P 500 vs 200-day average', pct(m.sp500_vs_200d * 100))}
+    ${kv('VIX (fear gauge)', m.vix)}${kv('Buy threshold this week', D.threshold)}</div>
+  <div class="card"><h2>Indices</h2>${ix.length ? `<div class="grid">${ix.map(([n, v]) => `<div class="tile"><div class="muted">${esc(n)}</div>
+    <div class="big" style="font-size:22px">${v.price.toLocaleString()}</div>
+    <div class="${cls(v.d1)}">${lvl(n) ? (v.d1a >= 0 ? '+' : '') + v.d1a.toFixed(2) : pct(v.d1)} today</div>
+    <div class="muted">${lvl(n) ? '' : pct(v.m1) + ' 1 month'}</div></div>`).join('')}</div>` : '<div class="muted">Not available in this run.</div>'}</div>
+  <div class="card"><h2>Sectors · 1 month</h2>${sc.length ? sc.map(([n, v]) => `<div class="row"><span style="width:150px">${esc(n)}</span>
+    <div class="bar"><i class="" style="width:${100 * Math.abs(v.m1) / mx}%;background:var(--${v.m1 >= 0 ? 'good' : 'bad'})"></i></div>
+    <span class="${cls(v.m1)}" style="width:62px;text-align:right">${pct(v.m1)}</span><span class="muted" style="width:62px;text-align:right">${pct(v.d1)} 1d</span></div>`).join('')
+    : '<div class="muted">Not available in this run.</div>'}</div>`;
+}
+ 
+function detail(s) {
+  const i = s.info || {}, h = i.history || {}, hi = i.fiftyTwoWeekHigh, lo = i.fiftyTwoWeekLow;
+  const pos = hi && lo && hi > lo ? Math.max(0, Math.min(100, 100 * (s.price - lo) / (hi - lo))) : null;
+  const yrs = [...new Set(Object.values(h).flat().map(x => x[0]))].sort();
+  const at = (k, y) => { const r = (h[k] || []).find(x => x[0] === y); return r ? B(r[1]) : '–'; };
+  return `<h1>${esc(s.ticker)} <span class="muted">${esc(i.longName || '')}</span></h1>
+  <div class="sub">${esc([i.sector, i.industry].filter(Boolean).join(' · '))}</div>
+  <div class="card"><div class="row" style="padding:0"><div><div class="big">${s.price ? usd(s.price) : '–'}</div><div class="muted">Market cap ${B(i.marketCap)}</div></div>
+    <div style="text-align:right"><div class="big">${s.score == null ? '–' : Math.round(s.score)}<span class="muted">/100</span></div>
+    <div class="${s.order ? 'good' : 'muted'}">${s.order ? 'Buy ' + usd(s.order) + ' this week' : 'Skip this week'}</div></div></div></div>
+  <div class="card"><h2>Score breakdown</h2>${(s.breakdown || []).map(b => `<div class="row"><span style="width:150px">${LABEL[b.k] || b.k}</span>
+    <span style="width:60px;text-align:right">${(FMT[b.k] || X)(b.v)}</span><div class="bar"><i style="width:${b.pts}%"></i></div>
+    <span class="s">${b.pts}</span><span class="muted" style="width:34px;text-align:right">×${b.w}</span></div>`).join('') || '<div class="muted">No breakdown yet.</div>'}
+    <div class="muted" style="margin-top:8px">Each metric is scored 0–100, then weighted (×) into the total.</div></div>
+  <div class="card"><h2>Valuation &amp; trading</h2>${kv('Market cap', B(i.marketCap))}${kv('P/E (trailing)', X(i.trailingPE))}${kv('P/E (forward)', X(i.forwardPE))}
+    ${kv('Price / book', X(i.priceToBook))}${kv('Beta', X(i.beta))}
+    ${kv('52-week range', lo && hi ? usd(lo) + ' – ' + usd(hi) : '–')}${pos == null ? '' : `<div class="bar" style="margin:6px 0"><i style="width:${pos}%"></i></div><div class="muted">Currently ${pos.toFixed(0)}% of the way up the 52-week range</div>`}</div>
+  <div class="card"><h2>Financials (latest)</h2>${kv('Revenue', B(i.totalRevenue))}${kv('Revenue growth', P(i.revenueGrowth))}${kv('Gross margin', P(i.grossMargins))}
+    ${kv('Operating margin', P(i.operatingMargins))}${kv('Profit margin', P(i.profitMargins))}${kv('EBITDA', B(i.ebitda))}${kv('Operating cash flow', B(i.operatingCashflow))}
+    ${kv('Free cash flow', B(i.freeCashflow))}${kv('Cash', B(i.totalCash))}${kv('Total debt', B(i.totalDebt))}${kv('Debt / equity', i.debtToEquity == null ? '–' : (i.debtToEquity / 100).toFixed(2) + 'x')}
+    ${kv('Return on equity', P(i.returnOnEquity))}</div>
+  <div class="card"><h2>Annual results</h2>${yrs.length ? `<table><tr><th></th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr>
+    ${[['Revenue', 'revenue'], ['Net income', 'net_income'], ['Free cash flow', 'fcf']].map(([n, k]) => `<tr><td>${n}</td>${yrs.map(y => `<td>${at(k, y)}</td>`).join('')}</tr>`).join('')}</table>`
+    : '<div class="muted">Not available in this run.</div>'}</div>`;
 }
 </script>
 </body>
 </html>
+ 
