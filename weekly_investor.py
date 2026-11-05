@@ -49,6 +49,7 @@ def fetch_stock(ticker):
     import yfinance as yf
     t = yf.Ticker(ticker)
     info = t.info or {}
+    _INFO[ticker] = info
     px = t.history(period="1y")["Close"].dropna()
     m = {"pe": num(info.get("trailingPE")),
          "peg": num(info.get("pegRatio") or info.get("trailingPegRatio")),
@@ -68,6 +69,62 @@ def market_score():
     trend = float(spx.iloc[-1] / spx.tail(200).mean() - 1)
     score = 100 * (0.6 * lerp(trend, -0.10, 0.08) + 0.4 * lerp(vix, 35, 14))
     return score, {"sp500_vs_200d": round(trend, 3), "vix": round(vix, 1)}
+
+
+_INFO, _DETAIL = {}, {}
+INDICES = {"^GSPC": "S&P 500", "^IXIC": "Nasdaq", "^DJI": "Dow", "^RUT": "Russell 2000",
+           "^VIX": "VIX", "^TNX": "10Y yield"}
+SECTORS = {"XLK": "Technology", "XLF": "Financials", "XLV": "Health Care", "XLE": "Energy",
+           "XLY": "Consumer Discretionary", "XLP": "Consumer Staples", "XLI": "Industrials",
+           "XLU": "Utilities", "XLB": "Materials", "XLRE": "Real Estate", "XLC": "Communication"}
+INFO_KEYS = ["longName", "sector", "industry", "marketCap", "trailingPE", "forwardPE", "priceToBook",
+             "beta", "fiftyTwoWeekHigh", "fiftyTwoWeekLow", "totalRevenue", "revenueGrowth",
+             "grossMargins", "operatingMargins", "profitMargins", "ebitda", "freeCashflow",
+             "operatingCashflow", "totalCash", "totalDebt", "debtToEquity", "returnOnEquity"]
+
+
+def perf(sym):
+    import yfinance as yf
+    px = yf.Ticker(sym).history(period="3mo")["Close"].dropna()
+    last, prev, mo = float(px.iloc[-1]), float(px.iloc[-2]), float(px.iloc[-22])
+    return {"price": round(last, 2), "d1": round(100 * (last / prev - 1), 2),
+            "d1a": round(last - prev, 2), "m1": round(100 * (last / mo - 1), 2)}
+
+
+def overview():
+    out = {"indices": {}, "sectors": {}}
+    for group, syms in (("indices", INDICES), ("sectors", SECTORS)):
+        for sym, name in syms.items():
+            try:
+                out[group][name] = perf(sym)
+            except Exception:
+                pass
+    return out
+
+
+def fetch_details(t):
+    """Key stats from the info cached by fetch_stock, plus 4 years of annual results."""
+    i = _INFO.get(t, {})
+    d = {k: (i.get(k) if isinstance(i.get(k), str) else num(i.get(k))) for k in INFO_KEYS}
+    hist = {}
+    try:
+        import yfinance as yf
+        tk = yf.Ticker(t)
+        for label, df, row in (("revenue", tk.income_stmt, "Total Revenue"),
+                               ("net_income", tk.income_stmt, "Net Income"),
+                               ("fcf", tk.cashflow, "Free Cash Flow")):
+            if row in df.index:
+                ser = df.loc[row].dropna().sort_index().tail(4)
+                hist[label] = [[str(k.year), float(v)] for k, v in ser.items()]
+    except Exception:
+        pass
+    d["history"] = hist
+    return d
+
+
+def breakdown(m):
+    return [{"k": k, "v": round(m[k], 4), "pts": round(100 * lerp(m[k], b, g)), "w": w}
+            for k, (b, g, w) in RULES.items() if m.get(k) is not None]
 
 
 # ---------- scoring + planning ----------
@@ -174,8 +231,8 @@ def write_dashboard(cfg, mode, mkt, detail, scores, orders, prices, note):
         "budget": cfg["weekly_budget_usd"], "allocation": cfg["allocation"]["mode"],
         "if_stock_fails": cfg["if_stock_fails"],
         "stocks": [{"ticker": t, "score": None if s is None else round(s, 1), "metrics": n,
-                    "order": orders.get(t, 0)} for t, (s, n) in scores.items()],
-        "positions": positions(prices),
+                    "order": orders.get(t, 0), **_DETAIL.get(t, {})} for t, (s, n) in scores.items()],
+        "positions": positions(prices), "overview": overview(),
         "trades": ledger_rows()[-15:][::-1],
     }
     os.makedirs("docs", exist_ok=True)
@@ -213,6 +270,8 @@ def main():
         try:
             prices[t], m = fetch_stock(t)
             scores[t] = score_stock(m)
+            _DETAIL[t] = {"price": round(prices[t], 2), "breakdown": breakdown(m),
+                          "info": fetch_details(t)}
         except Exception as e:
             print(f"  {t}: data error ({e}); skipped")
             continue
