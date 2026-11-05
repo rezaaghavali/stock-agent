@@ -64,7 +64,7 @@ const LIVE = {};
 const store = {get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
 const key = () => store.get('fhKey');
 const num = v => typeof v === 'number' && isFinite(v) ? v : null;
-const curTicker = () => { const h = decodeURIComponent(location.hash.slice(1)); return h === 'market' || h === 'live' ? h : h.toUpperCase(); };
+const curTicker = () => { const h = decodeURIComponent(location.hash.slice(1)); return h === 'market' || h === 'live' || h === 'daily' ? h : h.toUpperCase(); };
 
 async function fh(path, params) {
   const u = new URL('https://finnhub.io/api/v1/' + path);
@@ -91,11 +91,13 @@ async function ensure(t, full) {
   if (c === t || c === 'market' || c === '') route(true);
 }
 
-let D;
+let D, DD = null;
 fetch('data.json', {cache: 'no-store'}).then(r => { if (!r.ok) throw 0; return r.json(); })
   .then(d => { D = d; route(); })
   .catch(() => { app.innerHTML = '<div class="card muted">No data yet. Run the workflow once from the Actions tab.</div>'; });
 addEventListener('hashchange', () => D && route());
+fetch('daily.json', {cache: 'no-store'}).then(r => r.ok ? r.json() : null)
+  .then(x => { DD = x; if (D && curTicker() === 'daily') route(true); }).catch(() => {});
 
 const keyCard = force => `<div class="card"><h2>Live data</h2><div class="muted" style="margin-bottom:8px">${force && key() ? 'A key is saved in this browser.' : 'Paste a free Finnhub API key to turn on live prices and search any ticker.'}
   Get one at <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io/register</a>. It stays in this browser only, never in your repo.</div>
@@ -114,14 +116,15 @@ const liveIdx = () => !key() ? '' : `<div class="card"><h2>Live · index ETFs</h
 
 function route(keep) {
   const h = curTicker();
-  const nav = `<div class="nav"><a href="#" class="${!h ? 'on' : ''}">Portfolio</a><a href="#market" class="${h === 'market' ? 'on' : ''}">Market</a>
+  const nav = `<div class="nav"><a href="#" class="${!h ? 'on' : ''}">Portfolio</a><a href="#market" class="${h === 'market' ? 'on' : ''}">Market</a><a href="#daily" class="${h === 'daily' ? 'on' : ''}">Daily</a>
     <input id="q" placeholder="Ticker, e.g. TSLA" autocapitalize="characters" autocomplete="off" onkeydown="if(event.key==='Enter'&&this.value.trim())location.hash=this.value.trim().toUpperCase()"></div>`;
   let body;
   if (h === 'market') { ETFS.forEach(s => ensure(s, false)); body = market(); }
   else if (h === 'live') body = keyCard(true);
+  else if (h === 'daily') body = daily();
   else if (h) { ensure(h, true); body = detail(h); }
   else { D.stocks.forEach(s => ensure(s.ticker, false)); body = home(); }
-  app.innerHTML = nav + (key() || h === 'live' ? '' : keyCard()) + body + foot();
+  app.innerHTML = nav + (key() || h === 'live' || h === 'daily' ? '' : keyCard()) + body + foot();
   if (!keep) scrollTo(0, 0);
 }
 
@@ -166,6 +169,26 @@ function market() {
     <div class="bar"><i class="" style="width:${100 * Math.abs(v.m1) / mx}%;background:var(--${v.m1 >= 0 ? 'good' : 'bad'})"></i></div>
     <span class="${cls(v.m1)}" style="width:62px;text-align:right">${pct(v.m1)}</span><span class="muted" style="width:62px;text-align:right">${pct(liveDay(n) ?? v.d1)} 1d</span></div>`).join('')
     : '<div class="muted">Not available in this run.</div>'}</div>`;
+}
+
+function daily() {
+  if (!DD) return '<h1>Daily scan</h1><div class="card muted">No daily data yet. Run the daily-scan workflow once from the Actions tab.</div>';
+  const d = DD, inv = d.positions.reduce((a, p) => a + p.invested, 0), val = d.positions.reduce((a, p) => a + p.value, 0);
+  const ret = inv ? 100 * (val / inv - 1) : 0, top = [...d.positions].sort((a, b) => b.value - a.value).slice(0, 15);
+  const hist = d.history.slice(-8).reverse();
+  return `<h1>Daily scan <span class="badge">PAPER</span></h1><div class="sub">Last run ${esc(d.updated)} · scanned ${d.scanned} stocks · ${esc(d.note)}</div>
+  <div class="card"><h2>Paper portfolio · ${usd(d.budget)} per day</h2><div class="row" style="padding-top:0"><div><div class="big">${usd(val)}</div>
+    <div class="muted">invested ${usd(inv)}</div></div><div class="big ${cls(ret)}">${pct(ret)}</div></div>
+    <table><tr><th>Date</th><th>Invested</th><th>Value</th><th>Return</th></tr>${hist.map(x => `<tr><td>${esc(x.date)}</td><td>${usd(x.invested)}</td><td>${usd(x.value)}</td>
+    <td class="${cls(x.value - x.invested)}">${x.invested ? pct(100 * (x.value / x.invested - 1)) : '–'}</td></tr>`).join('')}</table></div>
+  <div class="card"><h2>Top scores today · ${usd(d.slot)} per pick</h2>${d.candidates.map(c => `<a class="row" href="#${encodeURIComponent(c.ticker)}"><span class="t">${esc(c.ticker)}</span>
+    <div class="bar"><i style="width:${c.score ?? 0}%"></i><b style="left:${d.threshold}%"></b></div><span class="s">${c.score === null ? '–' : Math.round(c.score)}</span>
+    <span class="o ${c.order ? 'good' : 'muted'}">${c.order ? 'Buy ' + usd(c.order) : 'Skip'}</span></a>`).join('')}
+    <div class="muted" style="margin-top:8px">Marker = buy threshold (${d.threshold}). Market score ${d.market.score}/100.</div></div>
+  <div class="card"><h2>Largest positions (${d.positions.length} total)</h2>${top.map(p => `<a class="row" href="#${encodeURIComponent(p.ticker)}"><span class="t">${esc(p.ticker)}</span>
+    <span class="muted">${usd(p.invested)} in</span><span>${usd(p.value)}</span><span class="${cls(p.value - p.invested)}">${pct(100 * (p.value / p.invested - 1))}</span></a>`).join('') || '<div class="muted">None yet.</div>'}</div>
+  <div class="card"><h2>Recent buys</h2>${d.trades.slice(0, 12).map(t => `<div class="row"><span class="muted">${esc(t.date)}</span><span class="t">${esc(t.ticker)}</span>
+    <span>${usd(t.usd)}</span><span class="muted">score ${esc(t.score)}</span></div>`).join('') || '<div class="muted">None yet.</div>'}</div>`;
 }
 
 function merged(base, L) {
