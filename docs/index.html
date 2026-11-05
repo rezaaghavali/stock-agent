@@ -31,6 +31,9 @@ a{color:var(--accent)}a.row{color:inherit;text-decoration:none}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:right;padding:6px 4px;border-top:1px solid var(--line);white-space:nowrap}th{color:var(--muted);font-weight:500;border-top:0}
 th:first-child,td:first-child{text-align:left}
+input{font:inherit;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--text);min-width:0}
+#q{flex:1}
+button{font:inherit;padding:6px 16px;border-radius:99px;border:0;background:var(--accent);color:#fff;cursor:pointer}
 </style>
 </head>
 <body>
@@ -51,20 +54,77 @@ const B = n => {
 const kv = (k, v) => `<div class="kv"><span class="muted">${k}</span><b>${v}</b></div>`;
 const LABEL = {pe: 'P/E', peg: 'PEG', rev_growth: 'Revenue growth', profit_margin: 'Profit margin', debt_equity: 'Debt / equity', trend200: 'Price vs 200-day avg', rsi: 'RSI (14)'};
 const FMT = {rev_growth: P, profit_margin: P, trend200: P, debt_equity: v => (v / 100).toFixed(2) + 'x', pe: X, peg: X, rsi: X};
- 
+
+// Keep RULES in sync with weekly_investor.py
+const RULES = {pe: [45, 15, 2], peg: [3, 1, 1.5], rev_growth: [0, 0.15, 2], profit_margin: [0, 0.2, 2], debt_equity: [200, 50, 1], trend200: [-0.15, 0.1, 1.5], rsi: [75, 40, 1]};
+const IDX = {'S&P 500': 'SPY', 'Nasdaq 100': 'QQQ', 'Dow': 'DIA', 'Russell 2000': 'IWM'};
+const SECT = {Technology: 'XLK', Financials: 'XLF', 'Health Care': 'XLV', Energy: 'XLE', 'Consumer Discretionary': 'XLY', 'Consumer Staples': 'XLP', Industrials: 'XLI', Utilities: 'XLU', Materials: 'XLB', 'Real Estate': 'XLRE', Communication: 'XLC'};
+const ETFS = [...Object.values(IDX), ...Object.values(SECT)];
+const LIVE = {};
+const store = {get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
+const key = () => store.get('fhKey');
+const num = v => typeof v === 'number' && isFinite(v) ? v : null;
+const curTicker = () => { const h = decodeURIComponent(location.hash.slice(1)); return h === 'market' || h === 'live' ? h : h.toUpperCase(); };
+
+async function fh(path, params) {
+  const u = new URL('https://finnhub.io/api/v1/' + path);
+  Object.entries({...params, token: key()}).forEach(([k, v]) => u.searchParams.set(k, v));
+  const r = await fetch(u);
+  if (r.status === 401 || r.status === 403) throw new Error('Finnhub rejected the key. Check it and save again.');
+  if (r.status === 429) throw new Error('Rate limit hit (60 calls/min). Wait a minute and refresh.');
+  if (!r.ok) throw new Error('Finnhub error ' + r.status);
+  return r.json();
+}
+
+async function ensure(t, full) {
+  if (!key()) return;
+  const L = LIVE[t] = LIVE[t] || {};
+  if (L.busy || (L.ts && Date.now() - L.ts < 60000 && (L.p || !full))) return;
+  L.busy = true;
+  try {
+    L.q = await fh('quote', {symbol: t});
+    if (full && !L.p) [L.p, L.m] = await Promise.all([fh('stock/profile2', {symbol: t}), fh('stock/metric', {symbol: t, metric: 'all'}).then(x => x.metric || {})]);
+    L.err = null;
+  } catch (e) { L.err = e.message === 'Failed to fetch' ? 'Could not reach Finnhub (blocked or offline).' : e.message; }
+  L.ts = Date.now(); L.busy = false;
+  const c = curTicker();
+  if (c === t || c === 'market' || c === '') route(true);
+}
+
 let D;
 fetch('data.json', {cache: 'no-store'}).then(r => { if (!r.ok) throw 0; return r.json(); })
   .then(d => { D = d; route(); })
   .catch(() => { app.innerHTML = '<div class="card muted">No data yet. Run the workflow once from the Actions tab.</div>'; });
 addEventListener('hashchange', () => D && route());
- 
-function route() {
-  const h = decodeURIComponent(location.hash.slice(1)), s = D.stocks.find(x => x.ticker === h);
-  const nav = `<div class="nav"><a href="#" class="${!h ? 'on' : ''}">Portfolio</a><a href="#market" class="${h === 'market' ? 'on' : ''}">Market</a></div>`;
-  app.innerHTML = nav + (h === 'market' ? market() : s ? detail(s) : home());
-  scrollTo(0, 0);
+
+const keyCard = force => `<div class="card"><h2>Live data</h2><div class="muted" style="margin-bottom:8px">${force && key() ? 'A key is saved in this browser.' : 'Paste a free Finnhub API key to turn on live prices and search any ticker.'}
+  Get one at <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io/register</a>. It stays in this browser only, never in your repo.</div>
+  <div style="display:flex;gap:8px"><input id="k" placeholder="API key" style="flex:1"><button onclick="saveKey()">Save</button></div></div>`;
+function saveKey() {
+  const v = document.querySelector('#k').value.trim();
+  if (v) { store.set('fhKey', v); Object.keys(LIVE).forEach(k => delete LIVE[k]); }
+  location.hash = ''; route();
 }
- 
+const foot = () => `<div class="muted" style="text-align:center;margin:16px 0">Live data: Finnhub · <a href="#live">${key() ? 'change key' : 'add key'}</a></div>`;
+const lv = t => { const q = LIVE[t]?.q; return q && q.c ? `<div class="muted" style="font-weight:400;font-size:12px">${q.c.toFixed(2)} <span class="${cls(q.dp)}">${pct(q.dp)}</span></div>` : ''; };
+const liveDay = n => LIVE[SECT[n]]?.q?.dp ?? null;
+const liveIdx = () => !key() ? '' : `<div class="card"><h2>Live · index ETFs</h2>${LIVE.SPY?.err ? `<div class="bad" style="margin-bottom:8px">${esc(LIVE.SPY.err)}</div>` : ''}<div class="grid">${Object.entries(IDX).map(([n, s]) => {
+  const q = LIVE[s]?.q; return `<div class="tile"><div class="muted">${esc(n)} (${s})</div>${q && q.c ? `<div class="big" style="font-size:22px">${q.c.toFixed(2)}</div><div class="${cls(q.dp)}">${pct(q.dp)} today</div>` : '<div class="muted">loading…</div>'}</div>`; }).join('')}</div>
+  <div class="muted" style="margin-top:8px">VIX and the 10-year yield are not on the free live feed, so they show as of the last weekly run.</div></div>`;
+
+function route(keep) {
+  const h = curTicker();
+  const nav = `<div class="nav"><a href="#" class="${!h ? 'on' : ''}">Portfolio</a><a href="#market" class="${h === 'market' ? 'on' : ''}">Market</a>
+    <input id="q" placeholder="Ticker, e.g. TSLA" autocapitalize="characters" autocomplete="off" onkeydown="if(event.key==='Enter'&&this.value.trim())location.hash=this.value.trim().toUpperCase()"></div>`;
+  let body;
+  if (h === 'market') { ETFS.forEach(s => ensure(s, false)); body = market(); }
+  else if (h === 'live') body = keyCard(true);
+  else if (h) { ensure(h, true); body = detail(h); }
+  else { D.stocks.forEach(s => ensure(s.ticker, false)); body = home(); }
+  app.innerHTML = nav + (key() || h === 'live' ? '' : keyCard()) + body + foot();
+  if (!keep) scrollTo(0, 0);
+}
+
 function home() {
   const d = D, m = d.market;
   const st = m.score < d.floor ? ['Buying paused', 'bad'] : m.score < 50 ? ['Cautious: higher bar to buy', 'bad'] : ['Normal', 'good'];
@@ -76,7 +136,7 @@ function home() {
     <div style="text-align:right"><div class="${st[1]}">${st[0]}</div>
     <div class="muted">S&amp;P vs 200-day ${pct(m.sp500_vs_200d * 100)} · VIX ${m.vix}</div><a class="muted" href="#market">Market overview →</a></div></div></div>
   <div class="card"><h2>This week · ${usd(d.budget)} budget, ${esc(d.allocation)} split</h2>
-    ${d.stocks.map(s => `<a class="row" href="#${encodeURIComponent(s.ticker)}"><span class="t">${esc(s.ticker)}</span>
+    ${d.stocks.map(s => `<a class="row" href="#${encodeURIComponent(s.ticker)}"><span class="t" style="width:92px">${esc(s.ticker)}${lv(s.ticker)}</span>
       <div class="bar"><i style="width:${s.score ?? 0}%"></i><b style="left:${d.threshold}%"></b></div>
       <span class="s">${s.score === null ? '–' : Math.round(s.score)}</span>
       <span class="o ${s.order ? 'good' : 'muted'}">${s.order ? 'Buy ' + usd(s.order) : 'Skip'}</span></a>`).join('')}
@@ -89,14 +149,14 @@ function home() {
   <div class="card"><h2>Recent buys</h2>${d.trades.length ? d.trades.map(t => `<div class="row"><span class="muted">${esc(t.date)}</span>
     <span class="t">${esc(t.ticker)}</span><span>${usd(t.usd)}</span></div>`).join('') : '<div class="muted">None yet.</div>'}</div>`;
 }
- 
+
 function market() {
   const o = D.overview || {}, ix = Object.entries(o.indices || {}), m = D.market;
   const sc = Object.entries(o.sectors || {}).sort((a, b) => b[1].m1 - a[1].m1);
   const mx = Math.max(1, ...sc.map(([, v]) => Math.abs(v.m1)));
   const lvl = n => n === 'VIX' || n === '10Y yield';
   return `<h1>Market overview</h1><div class="sub">As of ${esc(D.updated)}</div>
-  <div class="card"><h2>Key indicators</h2>${kv('Agent market score', m.score + '/100')}${kv('S&P 500 vs 200-day average', pct(m.sp500_vs_200d * 100))}
+  ${liveIdx()}<div class="card"><h2>Key indicators</h2>${kv('Agent market score', m.score + '/100')}${kv('S&P 500 vs 200-day average', pct(m.sp500_vs_200d * 100))}
     ${kv('VIX (fear gauge)', m.vix)}${kv('Buy threshold this week', D.threshold)}</div>
   <div class="card"><h2>Indices</h2>${ix.length ? `<div class="grid">${ix.map(([n, v]) => `<div class="tile"><div class="muted">${esc(n)}</div>
     <div class="big" style="font-size:22px">${v.price.toLocaleString()}</div>
@@ -104,36 +164,71 @@ function market() {
     <div class="muted">${lvl(n) ? '' : pct(v.m1) + ' 1 month'}</div></div>`).join('')}</div>` : '<div class="muted">Not available in this run.</div>'}</div>
   <div class="card"><h2>Sectors · 1 month</h2>${sc.length ? sc.map(([n, v]) => `<div class="row"><span style="width:150px">${esc(n)}</span>
     <div class="bar"><i class="" style="width:${100 * Math.abs(v.m1) / mx}%;background:var(--${v.m1 >= 0 ? 'good' : 'bad'})"></i></div>
-    <span class="${cls(v.m1)}" style="width:62px;text-align:right">${pct(v.m1)}</span><span class="muted" style="width:62px;text-align:right">${pct(v.d1)} 1d</span></div>`).join('')
+    <span class="${cls(v.m1)}" style="width:62px;text-align:right">${pct(v.m1)}</span><span class="muted" style="width:62px;text-align:right">${pct(liveDay(n) ?? v.d1)} 1d</span></div>`).join('')
     : '<div class="muted">Not available in this run.</div>'}</div>`;
 }
- 
-function detail(s) {
-  const i = s.info || {}, h = i.history || {}, hi = i.fiftyTwoWeekHigh, lo = i.fiftyTwoWeekLow;
-  const pos = hi && lo && hi > lo ? Math.max(0, Math.min(100, 100 * (s.price - lo) / (hi - lo))) : null;
+
+function merged(base, L) {
+  const i = {...(base?.info || {})}, m = L.m || {}, p = L.p || {}, sh = (p.shareOutstanding || 0) * 1e6;
+  const put = (k, v, force) => { v = num(v); if (v != null && (force || i[k] == null)) i[k] = v; };
+  const pc = v => num(v) == null ? null : v / 100;
+  if (p.name && !i.longName) i.longName = p.name;
+  if (p.finnhubIndustry && !i.industry) i.industry = p.finnhubIndustry;
+  put('marketCap', p.marketCapitalization * 1e6, true);
+  put('trailingPE', m.peTTM ?? m.peBasicExclExtraTTM, true);
+  put('priceToBook', m.pbQuarterly ?? m.pbAnnual, true);
+  put('beta', m.beta, true);
+  put('fiftyTwoWeekHigh', m['52WeekHigh'], true); put('fiftyTwoWeekLow', m['52WeekLow'], true);
+  put('revenueGrowth', pc(m.revenueGrowthTTMYoy)); put('grossMargins', pc(m.grossMarginTTM));
+  put('operatingMargins', pc(m.operatingMarginTTM)); put('profitMargins', pc(m.netProfitMarginTTM)); put('returnOnEquity', pc(m.roeTTM));
+  put('debtToEquity', (m['totalDebt/totalEquityQuarterly'] ?? m['totalDebt/totalEquityAnnual']) * 100);
+  if (sh) { put('totalRevenue', m.revenuePerShareTTM * sh); put('operatingCashflow', m.cashFlowPerShareTTM * sh); }
+  return i;
+}
+
+function scoreOf(mt) {
+  let pts = 0, ws = 0; const bd = [];
+  for (const [k, [b, g, w]] of Object.entries(RULES)) {
+    const v = num(mt[k]); if (v == null) continue;
+    const s = Math.max(0, Math.min(1, (v - b) / (g - b)));
+    pts += s * w; ws += w; bd.push({k, v, pts: Math.round(100 * s), w});
+  }
+  return {score: ws ? 100 * pts / ws : null, breakdown: bd};
+}
+
+function detail(t) {
+  const base = D.stocks.find(x => x.ticker === t), L = LIVE[t] || {}, q = L.q || {};
+  const i = merged(base, L), price = q.c > 0 ? q.c : base?.price || null;
+  const status = !key() && !base ? 'Add a Finnhub key above to look up any ticker live.' : L.err ? L.err : (key() && !L.ts) ? 'Loading live data…'
+    : (!base && !(q.c > 0)) ? 'No data found for this ticker.' : '';
+  if (!base && !(price > 0)) return `<h1>${esc(t)}</h1><div class="card ${L.err ? 'bad' : 'muted'}">${esc(status)}</div>`;
+  const live = base ? null : scoreOf({pe: i.trailingPE, rev_growth: i.revenueGrowth, profit_margin: i.profitMargins, debt_equity: i.debtToEquity});
+  const sc = base ? base.score : live.score, bd = base ? base.breakdown : live.breakdown;
+  const h = i.history || {}, hi = i.fiftyTwoWeekHigh, lo = i.fiftyTwoWeekLow;
+  const pos = hi && lo && price && hi > lo ? Math.max(0, Math.min(100, 100 * (price - lo) / (hi - lo))) : null;
   const yrs = [...new Set(Object.values(h).flat().map(x => x[0]))].sort();
   const at = (k, y) => { const r = (h[k] || []).find(x => x[0] === y); return r ? B(r[1]) : '–'; };
-  return `<h1>${esc(s.ticker)} <span class="muted">${esc(i.longName || '')}</span></h1>
-  <div class="sub">${esc([i.sector, i.industry].filter(Boolean).join(' · '))}</div>
-  <div class="card"><div class="row" style="padding:0"><div><div class="big">${s.price ? usd(s.price) : '–'}</div><div class="muted">Market cap ${B(i.marketCap)}</div></div>
-    <div style="text-align:right"><div class="big">${s.score == null ? '–' : Math.round(s.score)}<span class="muted">/100</span></div>
-    <div class="${s.order ? 'good' : 'muted'}">${s.order ? 'Buy ' + usd(s.order) + ' this week' : 'Skip this week'}</div></div></div></div>
-  <div class="card"><h2>Score breakdown</h2>${(s.breakdown || []).map(b => `<div class="row"><span style="width:150px">${LABEL[b.k] || b.k}</span>
+  return `<h1>${esc(t)} <span class="muted">${esc(i.longName || '')}</span></h1>
+  <div class="sub">${esc([i.sector, i.industry].filter(Boolean).join(' · '))}${q.c > 0 && L.ts ? ' · live as of ' + new Date(L.ts).toLocaleTimeString() : ''}</div>
+  ${status ? `<div class="card ${L.err ? 'bad' : 'muted'}">${esc(status)}</div>` : ''}
+  <div class="card"><div class="row" style="padding:0"><div><div class="big">${price ? usd(price) : '–'}</div>
+    <div>${q.dp != null && q.c > 0 ? `<span class="${cls(q.dp)}">${pct(q.dp)} today</span> · ` : ''}<span class="muted">Mkt cap ${B(i.marketCap)}</span></div></div>
+    <div style="text-align:right"><div class="big">${sc == null ? '–' : Math.round(sc)}<span class="muted">/100</span></div>
+    <div class="${base && base.order ? 'good' : 'muted'}">${base ? (base.order ? 'Buy ' + usd(base.order) + ' this week' : 'Skip this week') : 'Not on your watchlist'}</div></div></div></div>
+  <div class="card"><h2>Score breakdown</h2>${(bd || []).map(b => `<div class="row"><span style="width:150px">${LABEL[b.k] || b.k}</span>
     <span style="width:60px;text-align:right">${(FMT[b.k] || X)(b.v)}</span><div class="bar"><i style="width:${b.pts}%"></i></div>
     <span class="s">${b.pts}</span><span class="muted" style="width:34px;text-align:right">×${b.w}</span></div>`).join('') || '<div class="muted">No breakdown yet.</div>'}
-    <div class="muted" style="margin-top:8px">Each metric is scored 0–100, then weighted (×) into the total.</div></div>
+    <div class="muted" style="margin-top:8px">${base ? 'Weekly agent score. Each metric is scored 0–100, then weighted (×).' : 'Live score from fundamentals only (no price-trend or RSI inputs), so it can differ from the agent score. To have the agent buy it, add it to watchlist in config.json.'}</div></div>
   <div class="card"><h2>Valuation &amp; trading</h2>${kv('Market cap', B(i.marketCap))}${kv('P/E (trailing)', X(i.trailingPE))}${kv('P/E (forward)', X(i.forwardPE))}
     ${kv('Price / book', X(i.priceToBook))}${kv('Beta', X(i.beta))}
     ${kv('52-week range', lo && hi ? usd(lo) + ' – ' + usd(hi) : '–')}${pos == null ? '' : `<div class="bar" style="margin:6px 0"><i style="width:${pos}%"></i></div><div class="muted">Currently ${pos.toFixed(0)}% of the way up the 52-week range</div>`}</div>
-  <div class="card"><h2>Financials (latest)</h2>${kv('Revenue', B(i.totalRevenue))}${kv('Revenue growth', P(i.revenueGrowth))}${kv('Gross margin', P(i.grossMargins))}
-    ${kv('Operating margin', P(i.operatingMargins))}${kv('Profit margin', P(i.profitMargins))}${kv('EBITDA', B(i.ebitda))}${kv('Operating cash flow', B(i.operatingCashflow))}
+  <div class="card"><h2>Financials (latest)</h2>${kv(base ? 'Revenue' : 'Revenue (TTM, estimated)', B(i.totalRevenue))}${kv('Revenue growth', P(i.revenueGrowth))}${kv('Gross margin', P(i.grossMargins))}
+    ${kv('Operating margin', P(i.operatingMargins))}${kv('Profit margin', P(i.profitMargins))}${kv('EBITDA', B(i.ebitda))}${kv(base ? 'Operating cash flow' : 'Operating cash flow (TTM, estimated)', B(i.operatingCashflow))}
     ${kv('Free cash flow', B(i.freeCashflow))}${kv('Cash', B(i.totalCash))}${kv('Total debt', B(i.totalDebt))}${kv('Debt / equity', i.debtToEquity == null ? '–' : (i.debtToEquity / 100).toFixed(2) + 'x')}
     ${kv('Return on equity', P(i.returnOnEquity))}</div>
-  <div class="card"><h2>Annual results</h2>${yrs.length ? `<table><tr><th></th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr>
-    ${[['Revenue', 'revenue'], ['Net income', 'net_income'], ['Free cash flow', 'fcf']].map(([n, k]) => `<tr><td>${n}</td>${yrs.map(y => `<td>${at(k, y)}</td>`).join('')}</tr>`).join('')}</table>`
-    : '<div class="muted">Not available in this run.</div>'}</div>`;
+  ${yrs.length ? `<div class="card"><h2>Annual results</h2><table><tr><th></th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr>
+    ${[['Revenue', 'revenue'], ['Net income', 'net_income'], ['Free cash flow', 'fcf']].map(([n, k]) => `<tr><td>${n}</td>${yrs.map(y => `<td>${at(k, y)}</td>`).join('')}</tr>`).join('')}</table></div>` : ''}`;
 }
 </script>
 </body>
 </html>
- 
