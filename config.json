@@ -7,9 +7,26 @@
   "weak_market_bump": 10,
   "max_order_usd": 100,
   "if_stock_fails": "skip",
-  "watchlist": ["AAPL", "MSFT", "GOOGL", "NVDA", "VOO"],
+  "watchlist": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "NVDA",
+    "VOO"
+  ],
   "allocation": {
     "mode": "equal",
-    "percent": {"AAPL": 40, "MSFT": 30, "VOO": 30}
+    "percent": {
+      "AAPL": 40,
+      "MSFT": 30,
+      "VOO": 30
+    }
+  },
+  "scan": {
+    "universe_file": "universe.txt",
+    "budget_usd": 1000,
+    "max_picks": 10,
+    "candidates": 40,
+    "max_per_ticker_usd": 5000
   }
 }
