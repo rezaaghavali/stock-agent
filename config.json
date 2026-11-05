@@ -1,0 +1,15 @@
+{
+  "mode": "paper",
+  "weekly_budget_usd": 100,
+  "buy_threshold": 60,
+  "min_metrics": 3,
+  "market_floor": 30,
+  "weak_market_bump": 10,
+  "max_order_usd": 100,
+  "if_stock_fails": "skip",
+  "watchlist": ["AAPL", "MSFT", "GOOGL", "NVDA", "VOO"],
+  "allocation": {
+    "mode": "equal",
+    "percent": {"AAPL": 40, "MSFT": 30, "VOO": 30}
+  }
+}
