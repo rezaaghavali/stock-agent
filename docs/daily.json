@@ -1,0 +1,296 @@
+{
+ "updated": "2026-11-05 20:12 UTC",
+ "market": {
+  "score": 56,
+  "sp500_vs_200d": 0.007,
+  "vix": 24.3
+ },
+ "threshold": 60,
+ "note": "Threshold 60. 31 cleared it.",
+ "budget": 1000,
+ "slot": 100.0,
+ "scanned": 112,
+ "candidates": [
+  {
+   "ticker": "COP",
+   "tech": 100.0,
+   "score": 92.9,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "CVX",
+   "tech": 100.0,
+   "score": 92.1,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "BLK",
+   "tech": 81.7,
+   "score": 88.9,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "CRM",
+   "tech": 100.0,
+   "score": 88.1,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "XOM",
+   "tech": 96.8,
+   "score": 86.2,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "MSFT",
+   "tech": 85.8,
+   "score": 85.2,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "JPM",
+   "tech": 78.8,
+   "score": 85.1,
+   "n": 6,
+   "order": 100.0
+  },
+  {
+   "ticker": "AMZN",
+   "tech": 73.1,
+   "score": 82.8,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "TXN",
+   "tech": 81.9,
+   "score": 81.5,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "ICE",
+   "tech": 71.6,
+   "score": 79.9,
+   "n": 7,
+   "order": 100.0
+  },
+  {
+   "ticker": "ADI",
+   "tech": 72.3,
+   "score": 76.1,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "AMD",
+   "tech": 75.0,
+   "score": 73.3,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "V",
+   "tech": 73.8,
+   "score": 73.2,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "CME",
+   "tech": 73.8,
+   "score": 71.8,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "UNP",
+   "tech": 80.4,
+   "score": 71.8,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "DHR",
+   "tech": 90.4,
+   "score": 70.9,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "VRTX",
+   "tech": 71.7,
+   "score": 70.3,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "CI",
+   "tech": 83.7,
+   "score": 68.6,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "MA",
+   "tech": 72.9,
+   "score": 67.1,
+   "n": 7,
+   "order": 0
+  },
+  {
+   "ticker": "AAPL",
+   "tech": 87.4,
+   "score": 65.5,
+   "n": 7,
+   "order": 0
+  }
+ ],
+ "positions": [
+  {
+   "ticker": "AMZN",
+   "invested": 100.0,
+   "value": 99.92
+  },
+  {
+   "ticker": "BLK",
+   "invested": 100.0,
+   "value": 100.08
+  },
+  {
+   "ticker": "COP",
+   "invested": 100.0,
+   "value": 100.0
+  },
+  {
+   "ticker": "CRM",
+   "invested": 100.0,
+   "value": 100.0
+  },
+  {
+   "ticker": "CVX",
+   "invested": 100.0,
+   "value": 100.0
+  },
+  {
+   "ticker": "ICE",
+   "invested": 100.0,
+   "value": 99.99
+  },
+  {
+   "ticker": "JPM",
+   "invested": 100.0,
+   "value": 100.0
+  },
+  {
+   "ticker": "MSFT",
+   "invested": 100.0,
+   "value": 99.97
+  },
+  {
+   "ticker": "TXN",
+   "invested": 100.0,
+   "value": 100.04
+  },
+  {
+   "ticker": "XOM",
+   "invested": 100.0,
+   "value": 99.99
+  }
+ ],
+ "history": [
+  {
+   "date": "2026-11-05",
+   "invested": 1000.0,
+   "value": 999.99
+  }
+ ],
+ "trades": [
+  {
+   "date": "2026-11-05",
+   "ticker": "ICE",
+   "usd": "100.0",
+   "price": "173.98",
+   "shares": "0.574779",
+   "score": "79.9"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "TXN",
+   "usd": "100.0",
+   "price": "282.975",
+   "shares": "0.353388",
+   "score": "81.5"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "AMZN",
+   "usd": "100.0",
+   "price": "259.04",
+   "shares": "0.386041",
+   "score": "82.8"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "JPM",
+   "usd": "100.0",
+   "price": "336.1",
+   "shares": "0.29753",
+   "score": "85.1"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "MSFT",
+   "usd": "100.0",
+   "price": "535.365",
+   "shares": "0.186788",
+   "score": "85.2"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "XOM",
+   "usd": "100.0",
+   "price": "167.695",
+   "shares": "0.596321",
+   "score": "86.2"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "CRM",
+   "usd": "100.0",
+   "price": "220.59",
+   "shares": "0.45333",
+   "score": "88.1"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "BLK",
+   "usd": "100.0",
+   "price": "1168.8501",
+   "shares": "0.085554",
+   "score": "88.9"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "CVX",
+   "usd": "100.0",
+   "price": "215.725",
+   "shares": "0.463553",
+   "score": "92.1"
+  },
+  {
+   "date": "2026-11-05",
+   "ticker": "COP",
+   "usd": "100.0",
+   "price": "137.5",
+   "shares": "0.727273",
+   "score": "92.9"
+  }
+ ]
+}
