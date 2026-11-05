@@ -1,0 +1,121 @@
+{
+ "updated": "2026-11-05 18:59 UTC",
+ "mode": "paper",
+ "note": "Threshold 60.",
+ "floor": 30,
+ "threshold": 60,
+ "market": {
+  "score": 52,
+  "sp500_vs_200d": 0.009,
+  "vix": 26.6
+ },
+ "budget": 100,
+ "allocation": "equal",
+ "if_stock_fails": "skip",
+ "stocks": [
+  {
+   "ticker": "AAPL",
+   "score": 65.9,
+   "metrics": 7,
+   "order": 20.0
+  },
+  {
+   "ticker": "MSFT",
+   "score": 84.7,
+   "metrics": 7,
+   "order": 20.0
+  },
+  {
+   "ticker": "GOOGL",
+   "score": 86.3,
+   "metrics": 7,
+   "order": 20.0
+  },
+  {
+   "ticker": "NVDA",
+   "score": 83.9,
+   "metrics": 7,
+   "order": 20.0
+  },
+  {
+   "ticker": "VOO",
+   "score": 76.0,
+   "metrics": 3,
+   "order": 20.0
+  }
+ ],
+ "positions": [
+  {
+   "ticker": "AAPL",
+   "invested": 20.0,
+   "value": 20.0
+  },
+  {
+   "ticker": "GOOGL",
+   "invested": 20.0,
+   "value": 20.0
+  },
+  {
+   "ticker": "MSFT",
+   "invested": 20.0,
+   "value": 20.0
+  },
+  {
+   "ticker": "NVDA",
+   "invested": 20.0,
+   "value": 20.0
+  },
+  {
+   "ticker": "VOO",
+   "invested": 20.0,
+   "value": 20.0
+  }
+ ],
+ "trades": [
+  {
+   "week": "2026-W45",
+   "date": "2026-11-05",
+   "mode": "paper",
+   "ticker": "VOO",
+   "usd": "20.0",
+   "price": "677.12",
+   "shares": "0.029537"
+  },
+  {
+   "week": "2026-W45",
+   "date": "2026-11-05",
+   "mode": "paper",
+   "ticker": "NVDA",
+   "usd": "20.0",
+   "price": "183.22",
+   "shares": "0.109158"
+  },
+  {
+   "week": "2026-W45",
+   "date": "2026-11-05",
+   "mode": "paper",
+   "ticker": "GOOGL",
+   "usd": "20.0",
+   "price": "283.69",
+   "shares": "0.070499"
+  },
+  {
+   "week": "2026-W45",
+   "date": "2026-11-05",
+   "mode": "paper",
+   "ticker": "MSFT",
+   "usd": "20.0",
+   "price": "538.96",
+   "shares": "0.037109"
+  },
+  {
+   "week": "2026-W45",
+   "date": "2026-11-05",
+   "mode": "paper",
+   "ticker": "AAPL",
+   "usd": "20.0",
+   "price": "343.565",
+   "shares": "0.058213"
+  }
+ ]
+}
