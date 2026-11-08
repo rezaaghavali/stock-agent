@@ -97,6 +97,23 @@ def main():
         p[0] += float(r["usd"]); p[1] += float(r["shares"])
     positions = [{"ticker": t, "invested": round(u, 2), "value": round(sh * last.get(t, 0), 2)}
                  for t, (u, sh) in sorted(pos.items())]
+    # Benchmark: the same dollars put into SPY on each buy date
+    bench = None
+    try:
+        import pandas as pd
+        import yfinance as yf
+        spy = yf.Ticker("SPY").history(period="2y")["Close"].dropna()
+        spy.index = spy.index.tz_localize(None).normalize()
+        sh = sum(float(r["usd"]) / float(spy.asof(pd.Timestamp(r["date"]))) for r in rows())
+        bench = round(sh * float(spy.iloc[-1]), 2)
+    except Exception as e:
+        print(f"  (SPY benchmark unavailable: {e})")
+    coh = {}
+    for r in rows():
+        c = coh.setdefault(r["date"], [0.0, 0.0, 0])
+        c[0] += float(r["usd"]); c[1] += float(r["shares"]) * last.get(r["ticker"], 0); c[2] += 1
+    cohorts = [{"date": d, "n": n, "invested": round(u, 2), "value": round(v, 2)}
+               for d, (u, v, n) in sorted(coh.items())][-30:]
     hist = []
     if os.path.exists("docs/daily.json"):
         try:
@@ -104,14 +121,14 @@ def main():
         except Exception:
             pass
     hist.append({"date": today, "invested": round(sum(p["invested"] for p in positions), 2),
-                 "value": round(sum(p["value"] for p in positions), 2)})
+                 "value": round(sum(p["value"] for p in positions), 2), "bench": bench})
     data = {"updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
             "market": {"score": round(mkt), **detail}, "threshold": thr, "note": note,
             "budget": sc["budget_usd"], "slot": slot, "scanned": len(ranks),
             "candidates": [{"ticker": t, "tech": round(ranks[t], 1),
                             "score": None if scored[t][0] is None else round(scored[t][0], 1),
                             "n": scored[t][1], "order": slot if t in picks else 0} for t in order[:20]],
-            "positions": positions, "history": hist[-90:], "trades": rows()[-30:][::-1]}
+            "positions": positions, "history": hist[-500:], "cohorts": cohorts, "trades": rows()[-30:][::-1]}
     os.makedirs("docs", exist_ok=True)
     with open("docs/daily.json", "w") as f:
         json.dump(data, f, indent=1)
