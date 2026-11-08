@@ -171,22 +171,47 @@ function market() {
     : '<div class="muted">Not available in this run.</div>'}</div>`;
 }
 
+function chart(hs) {
+  const pts = hs.filter(x => x.invested > 0);
+  if (pts.length < 2) return '<div class="muted">The chart appears after the second daily run.</div>';
+  const W = 600, H = 210, m = 30;
+  const ag = pts.map(x => 100 * (x.value / x.invested - 1)), bm = pts.map(x => x.bench ? 100 * (x.bench / x.invested - 1) : null);
+  const all = [...ag, ...bm.filter(v => v != null), 0], lo = Math.min(...all), hi = Math.max(...all), span = hi - lo || 1;
+  const X = i => m + (W - 2 * m) * i / (pts.length - 1), Y = v => H - m - (H - 2 * m) * (v - lo) / span;
+  const line = (arr, c, w) => { const d = arr.map((v, i) => v == null ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean);
+    return d.length > 1 ? `<polyline points="${d.join(' ')}" fill="none" style="stroke:${c};stroke-width:${w}"/>` : ''; };
+  const tx = 'style="fill:var(--muted);font-size:11px"';
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+    <line x1="${m}" x2="${W - m}" y1="${Y(0)}" y2="${Y(0)}" style="stroke:var(--line);stroke-dasharray:4"/>
+    <text x="${m}" y="14" ${tx}>${hi.toFixed(1)}%</text><text x="${m}" y="${H - 14}" ${tx}>${lo.toFixed(1)}%</text>
+    <text x="${m}" y="${H - 2}" ${tx}>${esc(pts[0].date)}</text><text x="${W - m}" y="${H - 2}" text-anchor="end" ${tx}>${esc(pts[pts.length - 1].date)}</text>
+    ${line(bm, 'var(--muted)', 2)}${line(ag, 'var(--accent)', 2.5)}</svg>
+    <div class="muted"><span style="color:var(--accent)">━ Agent</span> &nbsp; <span>━ SPY with the same dollars</span></div>`;
+}
+
 function daily() {
   if (!DD) return '<h1>Daily scan</h1><div class="card muted">No daily data yet. Run the daily-scan workflow once from the Actions tab.</div>';
   const d = DD, inv = d.positions.reduce((a, p) => a + p.invested, 0), val = d.positions.reduce((a, p) => a + p.value, 0);
-  const ret = inv ? 100 * (val / inv - 1) : 0, top = [...d.positions].sort((a, b) => b.value - a.value).slice(0, 15);
-  const hist = d.history.slice(-8).reverse();
+  const ret = inv ? 100 * (val / inv - 1) : 0, rt = p => 100 * (p.value / p.invested - 1);
+  const lastH = d.history[d.history.length - 1] || {}, bR = lastH.bench && lastH.invested ? 100 * (lastH.bench / lastH.invested - 1) : null;
+  const win = d.positions.filter(p => p.value >= p.invested).length;
+  const byRet = [...d.positions].sort((a, b) => rt(b) - rt(a)), best = byRet.slice(0, 5), worst = byRet.slice(-5).reverse();
+  const tile = (k, v, c) => `<div class="tile"><div class="muted">${k}</div><div class="big ${c || ''}" style="font-size:22px">${v}</div></div>`;
+  const prow = p => `<a class="row" href="#${encodeURIComponent(p.ticker)}"><span class="t">${esc(p.ticker)}</span><span class="muted">${usd(p.invested)} in</span><span class="${cls(rt(p))}">${pct(rt(p))}</span></a>`;
   return `<h1>Daily scan <span class="badge">PAPER</span></h1><div class="sub">Last run ${esc(d.updated)} · scanned ${d.scanned} stocks · ${esc(d.note)}</div>
-  <div class="card"><h2>Paper portfolio · ${usd(d.budget)} per day</h2><div class="row" style="padding-top:0"><div><div class="big">${usd(val)}</div>
-    <div class="muted">invested ${usd(inv)}</div></div><div class="big ${cls(ret)}">${pct(ret)}</div></div>
-    <table><tr><th>Date</th><th>Invested</th><th>Value</th><th>Return</th></tr>${hist.map(x => `<tr><td>${esc(x.date)}</td><td>${usd(x.invested)}</td><td>${usd(x.value)}</td>
-    <td class="${cls(x.value - x.invested)}">${x.invested ? pct(100 * (x.value / x.invested - 1)) : '–'}</td></tr>`).join('')}</table></div>
+  <div class="card"><h2>Performance · ${usd(d.budget)} per day</h2>
+    <div class="grid" style="margin-bottom:12px">${tile('Portfolio value', usd(val))}${tile('Total return', pct(ret), cls(ret))}
+      ${tile('SPY, same dollars', bR == null ? '–' : pct(bR))}${tile('Vs SPY', bR == null ? '–' : (ret - bR >= 0 ? '+' : '') + (ret - bR).toFixed(1) + ' pts', bR == null ? '' : cls(ret - bR))}
+      ${tile('Invested', usd(inv))}${tile('Positions up', d.positions.length ? win + ' of ' + d.positions.length : '–')}</div>
+    ${chart(d.history)}</div>
+  <div class="card"><h2>How each day's buys are doing</h2>${d.cohorts && d.cohorts.length ? `<table><tr><th>Bought</th><th>Buys</th><th>In</th><th>Now</th><th>Return</th></tr>
+    ${[...d.cohorts].reverse().slice(0, 14).map(c => `<tr><td>${esc(c.date)}</td><td>${c.n}</td><td>${usd(c.invested)}</td><td>${usd(c.value)}</td><td class="${cls(c.value - c.invested)}">${pct(100 * (c.value / c.invested - 1))}</td></tr>`).join('')}</table>`
+    : '<div class="muted">No buys yet.</div>'}</div>
   <div class="card"><h2>Top scores today · ${usd(d.slot)} per pick</h2>${d.candidates.map(c => `<a class="row" href="#${encodeURIComponent(c.ticker)}"><span class="t">${esc(c.ticker)}</span>
     <div class="bar"><i style="width:${c.score ?? 0}%"></i><b style="left:${d.threshold}%"></b></div><span class="s">${c.score === null ? '–' : Math.round(c.score)}</span>
     <span class="o ${c.order ? 'good' : 'muted'}">${c.order ? 'Buy ' + usd(c.order) : 'Skip'}</span></a>`).join('')}
     <div class="muted" style="margin-top:8px">Marker = buy threshold (${d.threshold}). Market score ${d.market.score}/100.</div></div>
-  <div class="card"><h2>Largest positions (${d.positions.length} total)</h2>${top.map(p => `<a class="row" href="#${encodeURIComponent(p.ticker)}"><span class="t">${esc(p.ticker)}</span>
-    <span class="muted">${usd(p.invested)} in</span><span>${usd(p.value)}</span><span class="${cls(p.value - p.invested)}">${pct(100 * (p.value / p.invested - 1))}</span></a>`).join('') || '<div class="muted">None yet.</div>'}</div>
+  <div class="card"><h2>Best and worst positions (${d.positions.length} total)</h2>${d.positions.length ? best.map(prow).join('') + '<div class="muted" style="padding:6px 0">· · ·</div>' + worst.map(prow).join('') : '<div class="muted">None yet.</div>'}</div>
   <div class="card"><h2>Recent buys</h2>${d.trades.slice(0, 12).map(t => `<div class="row"><span class="muted">${esc(t.date)}</span><span class="t">${esc(t.ticker)}</span>
     <span>${usd(t.usd)}</span><span class="muted">score ${esc(t.score)}</span></div>`).join('') || '<div class="muted">None yet.</div>'}</div>`;
 }
