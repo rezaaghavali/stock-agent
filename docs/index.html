@@ -3,37 +3,71 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1324">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <title>Stock Agent</title>
 <style>
-:root{color-scheme:light dark;--bg:#f6f7f9;--card:#fff;--text:#14181f;--muted:#667085;--line:#e4e7ec;--good:#12805c;--bad:#c2410c;--accent:#2f5fd0}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1319;--card:#171d26;--text:#e8ecf2;--muted:#98a2b3;--line:#273041;--good:#3ecf9a;--bad:#fb923c;--accent:#7aa2ff}}
+:root{color-scheme:dark;--bg:#0b1324;--card:#111b31;--text:#f3efe4;--muted:#9aa6bd;--line:rgba(217,191,130,.16);--good:#6fd6a6;--bad:#f1907b;--accent:#d9bf82;--accent2:#b8964a;--ink:#1b1608}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-main{max-width:720px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:4px 0 2px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
-.sub,.muted{color:var(--muted);font-size:13px}.sub{margin-bottom:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;overflow-x:auto}
-.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid var(--accent);color:var(--accent);margin-left:6px;vertical-align:middle}
-.big{font-size:32px;font-weight:700;line-height:1.1}
-.row,.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;color:var(--text);font:15px/1.5 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(180deg,#121d38 0,var(--bg) 460px) no-repeat}
+main{max-width:740px;margin:0 auto;padding:22px 16px 40px}
+h1,h2,.big{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-variant-numeric:lining-nums tabular-nums}
+h1{font-size:34px;font-weight:600;line-height:1.1;margin:6px 0 2px}
+h2{font-size:21px;font-weight:600;margin:0 0 12px}
+h1 .muted{-webkit-text-fill-color:var(--muted);font-size:18px}
+.sub,.muted{color:var(--muted);font-size:13px}.sub{margin-bottom:16px}
+.big{font-size:38px;font-weight:600;line-height:1.05}
+.card{background:linear-gradient(180deg,#14203a,var(--card));border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;overflow-x:auto;box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 18px 40px -24px rgba(0,0,0,.7)}
+.badge{display:inline-block;font:600 11px Manrope,sans-serif;letter-spacing:.08em;padding:3px 9px;border-radius:99px;border:1px solid var(--accent);color:var(--accent);-webkit-text-fill-color:var(--accent);margin-left:8px;vertical-align:middle}
+.row,.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
 .row:first-of-type,.kv:first-of-type{border-top:0}
-a{color:var(--accent)}a.row{color:inherit;text-decoration:none}
 .good{color:var(--good)}.bad{color:var(--bad)}
-.bar{position:relative;flex:1;height:8px;background:var(--line);border-radius:4px}
-.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--accent)}
-.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55}
-.t{width:60px;font-weight:600}.s{width:34px;text-align:right}.o{width:84px;text-align:right;font-size:13px}
-.nav{display:flex;gap:8px;margin-bottom:12px}
-.nav a{padding:6px 14px;border-radius:99px;border:1px solid var(--line);color:var(--muted);text-decoration:none;font-size:14px}
-.nav a.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tile{border:1px solid var(--line);border-radius:10px;padding:10px}
+a{color:var(--accent);text-decoration:none;transition:color .25s}a:hover{color:#f2dfae}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* clickable rows behave like buttons: brass rule grows in, wash slides across, text nudges */
+a.row{position:relative;color:inherit;margin:0 -10px;padding:9px 10px;border-radius:8px;transition:background .35s,transform .35s cubic-bezier(.2,.8,.2,1)}
+a.row::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:2px;border-radius:2px;background:var(--accent);transform:scaleY(0);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+a.row:hover,a.row:focus-visible{background:linear-gradient(90deg,rgba(217,191,130,.13),rgba(217,191,130,0));transform:translateX(3px)}
+a.row:hover::before,a.row:focus-visible::before{transform:scaleY(1)}
+.t{width:60px;font-weight:600;transition:color .3s}a.row:hover .t{color:var(--accent)}
+.s{width:34px;text-align:right}.o{width:84px;text-align:right;font-size:13px}
+
+/* nav pills and buttons: lift, brass glow, and a sheen that sweeps across */
+.nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.nav a,button{position:relative;overflow:hidden;isolation:isolate;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,color .3s,border-color .3s}
+.nav a{padding:8px 18px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-size:14px;font-weight:500;background:rgba(255,255,255,.02)}
+.nav a::after,button::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);transform:translateX(-130%);transition:transform .75s cubic-bezier(.2,.8,.2,1)}
+.nav a:hover,.nav a:focus-visible{transform:translateY(-2px);color:var(--text);border-color:var(--accent);box-shadow:0 8px 20px -8px rgba(217,191,130,.6)}
+.nav a:hover::after,button:hover::after{transform:translateX(130%)}
+.nav a.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:var(--ink);font-weight:600}
+button{font:600 14px Manrope,sans-serif;padding:8px 20px;border-radius:99px;border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--ink);cursor:pointer}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 22px -8px rgba(217,191,130,.75)}
+.nav a:active,button:active{transform:translateY(0) scale(.96);transition-duration:.1s}
+input{font:inherit;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);min-width:0;transition:border-color .25s,box-shadow .25s}
+input::placeholder{color:var(--muted)}
+input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(217,191,130,.18)}
+#q{flex:1;min-width:150px}
+
+.bar{position:relative;flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:4px}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));transform-origin:left}
+.bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);opacity:.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.02)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:right;padding:6px 4px;border-top:1px solid var(--line);white-space:nowrap}th{color:var(--muted);font-weight:500;border-top:0}
+th,td{text-align:right;padding:7px 4px;border-top:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:500;border-top:0}
 th:first-child,td:first-child{text-align:left}
-input{font:inherit;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--text);min-width:0}
-#q{flex:1}
-button{font:inherit;padding:6px 16px;border-radius:99px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+
+/* one entrance moment: score bars fill and the title settles whenever you open a page */
+@keyframes grow{from{transform:scaleX(0)}}
+@keyframes settle{from{opacity:0;transform:translateY(6px)}}
+#app.anim .bar i{animation:grow 1s cubic-bezier(.2,.8,.2,1) .15s both}
+#app.anim h1{animation:settle .7s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -124,6 +158,7 @@ function route(keep) {
   else if (h === 'daily') body = daily();
   else if (h) { ensure(h, true); body = detail(h); }
   else { D.stocks.forEach(s => ensure(s.ticker, false)); body = home(); }
+  app.classList.toggle('anim', !keep);
   app.innerHTML = nav + (key() || h === 'live' || h === 'daily' ? '' : keyCard()) + body + foot();
   if (!keep) scrollTo(0, 0);
 }
