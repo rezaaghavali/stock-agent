@@ -1,13 +1,13 @@
 {
- "updated": "2026-11-05 18:59 UTC",
+ "updated": "2026-11-10 00:29 UTC",
  "mode": "paper",
  "note": "Threshold 60.",
  "floor": 30,
  "threshold": 60,
  "market": {
-  "score": 52,
-  "sp500_vs_200d": 0.009,
-  "vix": 26.6
+  "score": 72,
+  "sp500_vs_200d": 0.03,
+  "vix": 19.9
  },
  "budget": 100,
  "allocation": "equal",
@@ -15,63 +15,762 @@
  "stocks": [
   {
    "ticker": "AAPL",
-   "score": 65.9,
+   "score": 62.8,
    "metrics": 7,
-   "order": 20.0
+   "order": 20.0,
+   "price": 350.69,
+   "breakdown": [
+    {
+     "k": "pe",
+     "v": 39.0523,
+     "pts": 20,
+     "w": 2.0
+    },
+    {
+     "k": "peg",
+     "v": 2.76,
+     "pts": 12,
+     "w": 1.5
+    },
+    {
+     "k": "rev_growth",
+     "v": 0.117,
+     "pts": 78,
+     "w": 2.0
+    },
+    {
+     "k": "profit_margin",
+     "v": 0.276,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "debt_equity",
+     "v": 84.286,
+     "pts": 77,
+     "w": 1.0
+    },
+    {
+     "k": "trend200",
+     "v": 0.1727,
+     "pts": 100,
+     "w": 1.5
+    },
+    {
+     "k": "rsi",
+     "v": 57.495,
+     "pts": 50,
+     "w": 1.0
+    }
+   ],
+   "info": {
+    "longName": "Apple Inc.",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "marketCap": 5096291172352.0,
+    "trailingPE": 39.05234,
+    "forwardPE": 33.235027,
+    "priceToBook": 45.467396,
+    "beta": 1.089,
+    "fiftyTwoWeekHigh": 355.38,
+    "fiftyTwoWeekLow": 243.42,
+    "totalRevenue": 478833999872.0,
+    "revenueGrowth": 0.117,
+    "grossMargins": 0.48786,
+    "operatingMargins": 0.31125,
+    "profitMargins": 0.27604,
+    "ebitda": 171486003200.0,
+    "freeCashflow": 105658376192.0,
+    "operatingCashflow": 145096998912.0,
+    "totalCash": 56722001920.0,
+    "totalDebt": 94478999552.0,
+    "debtToEquity": 84.286,
+    "returnOnEquity": 1.42257,
+    "history": {
+     "revenue": [
+      [
+       "2023",
+       383285000000.0
+      ],
+      [
+       "2024",
+       391035000000.0
+      ],
+      [
+       "2025",
+       416161000000.0
+      ],
+      [
+       "2026",
+       478834000000.0
+      ]
+     ],
+     "net_income": [
+      [
+       "2023",
+       96995000000.0
+      ],
+      [
+       "2024",
+       93736000000.0
+      ],
+      [
+       "2025",
+       112010000000.0
+      ],
+      [
+       "2026",
+       132175000000.0
+      ]
+     ],
+     "fcf": [
+      [
+       "2023",
+       99584000000.0
+      ],
+      [
+       "2024",
+       108807000000.0
+      ],
+      [
+       "2025",
+       98767000000.0
+      ],
+      [
+       "2026",
+       136056000000.0
+      ]
+     ]
+    }
+   }
   },
   {
    "ticker": "MSFT",
-   "score": 84.7,
+   "score": 84.1,
    "metrics": 7,
-   "order": 20.0
+   "order": 20.0,
+   "price": 545.18,
+   "breakdown": [
+    {
+     "k": "pe",
+     "v": 28.4541,
+     "pts": 55,
+     "w": 2.0
+    },
+    {
+     "k": "peg",
+     "v": 1.57,
+     "pts": 72,
+     "w": 1.5
+    },
+    {
+     "k": "rev_growth",
+     "v": 0.188,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "profit_margin",
+     "v": 0.4117,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "debt_equity",
+     "v": 28.465,
+     "pts": 100,
+     "w": 1.0
+    },
+    {
+     "k": "trend200",
+     "v": 0.2411,
+     "pts": 100,
+     "w": 1.5
+    },
+    {
+     "k": "rsi",
+     "v": 54.8089,
+     "pts": 58,
+     "w": 1.0
+    }
+   ],
+   "info": {
+    "longName": "Microsoft Corporation",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "marketCap": 4048612753408.0,
+    "trailingPE": 28.454071,
+    "forwardPE": 22.532112,
+    "priceToBook": 8.605704,
+    "beta": 1.045,
+    "fiftyTwoWeekHigh": 559.15,
+    "fiftyTwoWeekLow": 349.2,
+    "totalRevenue": 346444988416.0,
+    "revenueGrowth": 0.188,
+    "grossMargins": 0.67657,
+    "operatingMargins": 0.49757,
+    "profitMargins": 0.41169998,
+    "ebitda": 205690994688.0,
+    "freeCashflow": 2994125056.0,
+    "operatingCashflow": 195877994496.0,
+    "totalCash": 64509001728.0,
+    "totalDebt": 133930999808.0,
+    "debtToEquity": 28.465,
+    "returnOnEquity": 0.34221,
+    "history": {
+     "revenue": [
+      [
+       "2023",
+       211915000000.0
+      ],
+      [
+       "2024",
+       245122000000.0
+      ],
+      [
+       "2025",
+       281724000000.0
+      ],
+      [
+       "2026",
+       331839000000.0
+      ]
+     ],
+     "net_income": [
+      [
+       "2023",
+       72361000000.0
+      ],
+      [
+       "2024",
+       88136000000.0
+      ],
+      [
+       "2025",
+       101832000000.0
+      ],
+      [
+       "2026",
+       133749000000.0
+      ]
+     ],
+     "fcf": [
+      [
+       "2023",
+       59475000000.0
+      ],
+      [
+       "2024",
+       74071000000.0
+      ],
+      [
+       "2025",
+       71611000000.0
+      ],
+      [
+       "2026",
+       66987000000.0
+      ]
+     ]
+    }
+   }
   },
   {
    "ticker": "GOOGL",
    "score": 86.3,
    "metrics": 7,
-   "order": 20.0
+   "order": 20.0,
+   "price": 288.15,
+   "breakdown": [
+    {
+     "k": "pe",
+     "v": 15.047,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "peg",
+     "v": 1.01,
+     "pts": 100,
+     "w": 1.5
+    },
+    {
+     "k": "rev_growth",
+     "v": 0.247,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "profit_margin",
+     "v": 0.5003,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "debt_equity",
+     "v": 22.187,
+     "pts": 100,
+     "w": 1.0
+    },
+    {
+     "k": "trend200",
+     "v": -0.1501,
+     "pts": 0,
+     "w": 1.5
+    },
+    {
+     "k": "rsi",
+     "v": 23.7645,
+     "pts": 100,
+     "w": 1.0
+    }
+   ],
+   "info": {
+    "longName": "Alphabet Inc.",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "marketCap": 3542515974144.0,
+    "trailingPE": 15.046997,
+    "forwardPE": 18.668476,
+    "priceToBook": 5.371323,
+    "beta": 1.226,
+    "fiftyTwoWeekHigh": 408.61,
+    "fiftyTwoWeekLow": 270.7,
+    "totalRevenue": 471097999360.0,
+    "revenueGrowth": 0.247,
+    "grossMargins": 0.60857,
+    "operatingMargins": 0.31805,
+    "profitMargins": 0.50031,
+    "ebitda": 185515999232.0,
+    "freeCashflow": -1162499968.0,
+    "operatingCashflow": 179550994432.0,
+    "totalCash": 265098002432.0,
+    "totalDebt": 150330998784.0,
+    "debtToEquity": 22.187,
+    "returnOnEquity": 0.44286,
+    "history": {
+     "revenue": [
+      [
+       "2022",
+       282836000000.0
+      ],
+      [
+       "2023",
+       307394000000.0
+      ],
+      [
+       "2024",
+       350018000000.0
+      ],
+      [
+       "2025",
+       402836000000.0
+      ]
+     ],
+     "net_income": [
+      [
+       "2022",
+       59972000000.0
+      ],
+      [
+       "2023",
+       73795000000.0
+      ],
+      [
+       "2024",
+       100118000000.0
+      ],
+      [
+       "2025",
+       132170000000.0
+      ]
+     ],
+     "fcf": [
+      [
+       "2022",
+       60010000000.0
+      ],
+      [
+       "2023",
+       69495000000.0
+      ],
+      [
+       "2024",
+       72764000000.0
+      ],
+      [
+       "2025",
+       73266000000.0
+      ]
+     ]
+    }
+   }
   },
   {
    "ticker": "NVDA",
-   "score": 83.9,
+   "score": 83.1,
    "metrics": 7,
-   "order": 20.0
+   "order": 20.0,
+   "price": 178.67,
+   "breakdown": [
+    {
+     "k": "pe",
+     "v": 22.5879,
+     "pts": 75,
+     "w": 2.0
+    },
+    {
+     "k": "peg",
+     "v": 0.23,
+     "pts": 100,
+     "w": 1.5
+    },
+    {
+     "k": "rev_growth",
+     "v": 1.059,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "profit_margin",
+     "v": 0.6366,
+     "pts": 100,
+     "w": 2.0
+    },
+    {
+     "k": "debt_equity",
+     "v": 16.971,
+     "pts": 100,
+     "w": 1.0
+    },
+    {
+     "k": "trend200",
+     "v": -0.1257,
+     "pts": 10,
+     "w": 1.5
+    },
+    {
+     "k": "rsi",
+     "v": 26.9793,
+     "pts": 100,
+     "w": 1.0
+    }
+   ],
+   "info": {
+    "longName": "NVIDIA Corporation",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "marketCap": 4314344194048.0,
+    "trailingPE": 22.587864,
+    "forwardPE": 11.217311,
+    "priceToBook": 18.841084,
+    "beta": 2.247,
+    "fiftyTwoWeekHigh": 243.37,
+    "fiftyTwoWeekLow": 164.27,
+    "totalRevenue": 302970011648.0,
+    "revenueGrowth": 1.059,
+    "grossMargins": 0.74674004,
+    "operatingMargins": 0.66236997,
+    "profitMargins": 0.63663,
+    "ebitda": 201266003968.0,
+    "freeCashflow": 41809874944.0,
+    "operatingCashflow": 134359998464.0,
+    "totalCash": 62469001216.0,
+    "totalDebt": 38860001280.0,
+    "debtToEquity": 16.971,
+    "returnOnEquity": 1.17211,
+    "history": {
+     "revenue": [
+      [
+       "2023",
+       26974000000.0
+      ],
+      [
+       "2024",
+       60922000000.0
+      ],
+      [
+       "2025",
+       130497000000.0
+      ],
+      [
+       "2026",
+       215938000000.0
+      ]
+     ],
+     "net_income": [
+      [
+       "2023",
+       4368000000.0
+      ],
+      [
+       "2024",
+       29760000000.0
+      ],
+      [
+       "2025",
+       72880000000.0
+      ],
+      [
+       "2026",
+       120067000000.0
+      ]
+     ],
+     "fcf": [
+      [
+       "2023",
+       3808000000.0
+      ],
+      [
+       "2024",
+       27021000000.0
+      ],
+      [
+       "2025",
+       60853000000.0
+      ],
+      [
+       "2026",
+       96676000000.0
+      ]
+     ]
+    }
+   }
   },
   {
    "ticker": "VOO",
-   "score": 76.0,
+   "score": 76.1,
    "metrics": 3,
-   "order": 20.0
+   "order": 20.0,
+   "price": 691.87,
+   "breakdown": [
+    {
+     "k": "pe",
+     "v": 23.8967,
+     "pts": 70,
+     "w": 2.0
+    },
+    {
+     "k": "trend200",
+     "v": 0.0341,
+     "pts": 74,
+     "w": 1.5
+    },
+    {
+     "k": "rsi",
+     "v": 43.0963,
+     "pts": 91,
+     "w": 1.0
+    }
+   ],
+   "info": {
+    "longName": "Vanguard S&P 500 ETF",
+    "sector": null,
+    "industry": null,
+    "marketCap": null,
+    "trailingPE": 23.896704,
+    "forwardPE": null,
+    "priceToBook": 1.7701495,
+    "beta": null,
+    "fiftyTwoWeekHigh": 718.47,
+    "fiftyTwoWeekLow": 578.46,
+    "totalRevenue": null,
+    "revenueGrowth": null,
+    "grossMargins": null,
+    "operatingMargins": null,
+    "profitMargins": null,
+    "ebitda": null,
+    "freeCashflow": null,
+    "operatingCashflow": null,
+    "totalCash": null,
+    "totalDebt": null,
+    "debtToEquity": null,
+    "returnOnEquity": null,
+    "history": {}
+   }
   }
  ],
  "positions": [
   {
    "ticker": "AAPL",
-   "invested": 20.0,
-   "value": 20.0
+   "invested": 40.0,
+   "value": 40.41
   },
   {
    "ticker": "GOOGL",
-   "invested": 20.0,
-   "value": 20.0
+   "invested": 40.0,
+   "value": 40.31
   },
   {
    "ticker": "MSFT",
-   "invested": 20.0,
-   "value": 20.0
+   "invested": 40.0,
+   "value": 40.23
   },
   {
    "ticker": "NVDA",
-   "invested": 20.0,
-   "value": 20.0
+   "invested": 40.0,
+   "value": 39.5
   },
   {
    "ticker": "VOO",
-   "invested": 20.0,
-   "value": 20.0
+   "invested": 40.0,
+   "value": 40.44
   }
  ],
+ "overview": {
+  "indices": {
+   "S&P 500": {
+    "price": 7549.94,
+    "d1": 2.35,
+    "d1a": 173.08,
+    "m1": -3.35
+   },
+   "Nasdaq": {
+    "price": 25253.14,
+    "d1": 2.74,
+    "d1a": 673.71,
+    "m1": -7.72
+   },
+   "Dow": {
+    "price": 52389.75,
+    "d1": 2.15,
+    "d1a": 1104.02,
+    "m1": 1.42
+   },
+   "Russell 2000": {
+    "price": 2840.81,
+    "d1": 3.15,
+    "d1a": 86.7,
+    "m1": 1.21
+   },
+   "VIX": {
+    "price": 19.92,
+    "d1": -22.31,
+    "d1a": -5.72,
+    "m1": 34.23
+   },
+   "10Y yield": {
+    "price": 4.86,
+    "d1": 0.1,
+    "d1a": 0.0,
+    "m1": -7.25
+   }
+  },
+  "sectors": {
+   "Technology": {
+    "price": 170.88,
+    "d1": 3.73,
+    "d1a": 6.14,
+    "m1": -14.04
+   },
+   "Financials": {
+    "price": 57.99,
+    "d1": 1.45,
+    "d1a": 0.83,
+    "m1": 5.96
+   },
+   "Health Care": {
+    "price": 188.33,
+    "d1": 1.91,
+    "d1a": 3.53,
+    "m1": 10.26
+   },
+   "Energy": {
+    "price": 61.94,
+    "d1": 0.52,
+    "d1a": 0.32,
+    "m1": -4.82
+   },
+   "Consumer Discretionary": {
+    "price": 121.01,
+    "d1": 2.92,
+    "d1a": 3.43,
+    "m1": 7.23
+   },
+   "Consumer Staples": {
+    "price": 90.89,
+    "d1": 0.9,
+    "d1a": 0.81,
+    "m1": 8.94
+   },
+   "Industrials": {
+    "price": 168.89,
+    "d1": 3.82,
+    "d1a": 6.22,
+    "m1": -0.21
+   },
+   "Utilities": {
+    "price": 43.79,
+    "d1": 1.53,
+    "d1a": 0.66,
+    "m1": 5.75
+   },
+   "Materials": {
+    "price": 52.94,
+    "d1": 1.91,
+    "d1a": 0.99,
+    "m1": 7.1
+   },
+   "Real Estate": {
+    "price": 44.64,
+    "d1": 1.45,
+    "d1a": 0.64,
+    "m1": 7.28
+   },
+   "Communication": {
+    "price": 107.36,
+    "d1": 2.45,
+    "d1a": 2.57,
+    "m1": -2.74
+   }
+  }
+ },
  "trades": [
+  {
+   "week": "2026-W46",
+   "date": "2026-11-10",
+   "mode": "paper",
+   "ticker": "VOO",
+   "usd": "20.0",
+   "price": "691.87",
+   "shares": "0.028907"
+  },
+  {
+   "week": "2026-W46",
+   "date": "2026-11-10",
+   "mode": "paper",
+   "ticker": "NVDA",
+   "usd": "20.0",
+   "price": "178.67",
+   "shares": "0.111938"
+  },
+  {
+   "week": "2026-W46",
+   "date": "2026-11-10",
+   "mode": "paper",
+   "ticker": "GOOGL",
+   "usd": "20.0",
+   "price": "288.15",
+   "shares": "0.069408"
+  },
+  {
+   "week": "2026-W46",
+   "date": "2026-11-10",
+   "mode": "paper",
+   "ticker": "MSFT",
+   "usd": "20.0",
+   "price": "545.18",
+   "shares": "0.036685"
+  },
+  {
+   "week": "2026-W46",
+   "date": "2026-11-10",
+   "mode": "paper",
+   "ticker": "AAPL",
+   "usd": "20.0",
+   "price": "350.69",
+   "shares": "0.05703"
+  },
   {
    "week": "2026-W45",
    "date": "2026-11-05",
